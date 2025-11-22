@@ -63,7 +63,7 @@ bool touchSweepForward = true;
 int servoPos = 0;
 unsigned long lastServoUpdate = 0;
 const int servoInterval = 50; // ms between steps
-bool isBackgroundMusicPlaying = true; // Assume music starts in setup
+
 
 // ------------------- Movement -------------------
 bool forward = false;
@@ -100,8 +100,8 @@ char pass[]="speed123";
 
 // ------------------- Custom -------------------
 #define SOUTH 5
-const byte RXD2 = 16; // DFPlayer TX -> ESP32 RX
-const byte TXD2 = 17; // DFPlayer RX -> ESP32 TX
+const byte RXD2 = 25; // DFPlayer TX -> ESP32 RX
+const byte TXD2 = 26; // DFPlayer RX -> ESP32 TX
 
 
 // ------------------- DFPlayer -------------------
@@ -154,19 +154,6 @@ void setup() {
     display.display();
     delay(1500);
   }
-  dfSD.begin(9600, SERIAL_8N1, RXD2, TXD2);  // Initialize serial first
-
-if (!myDFPlayer.begin(dfSD)) {
-    Serial.println(F("DFPlayer Mini not detected!"));
-} else {
-    Serial.println(F("DFPlayer Mini online."));
-    myDFPlayer.setTimeOut(500);
-    myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
-    myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
-    myDFPlayer.volume(25);
-    myDFPlayer.play(2);
-}
-
 
     roboEyes.begin(SCREEN_WIDTH, SCREEN_HEIGHT, 200);
     roboEyes.setMood(HAPPY);
@@ -190,7 +177,15 @@ if (!myDFPlayer.begin(dfSD)) {
     pinMode(TOUCH_PIN, INPUT);
 
     // ------------------- DFPlayer Init -------------------
-
+    dfSD.begin(9600, SERIAL_8N1, RXD2, TXD2);// RX=16, TX=17
+    if (!myDFPlayer.begin(dfSD)) {
+        Serial.println(F("DFPlayer Mini not detected!"));
+    } else {
+        Serial.println(F("DFPlayer Mini online."));
+        myDFPlayer.volume(25); // 0~30
+    }
+    myDFPlayer.setTimeOut(500); 
+   myDFPlayer.play(2);
     // ------------------- Servo Sweep -------------------
     for (int pos = 0; pos <= 180; pos += 4) { 
         myservo.write(pos);
@@ -240,7 +235,7 @@ BLYNK_WRITE(V0) {
     speedMoodActive = true;
     speedMoodStart = millis();
     moodStart= millis();
-    
+    // Speed-based mood logic unchanged
     if (Speed <= 80) {
         roboEyes.setMood(TIRED);
         roboEyes.setSweat(OFF);
@@ -324,7 +319,22 @@ void carStop() {
 }
 
 // ------------------- Movement Sound -------------------
-
+void triggerSounds() {
+  if (forward && !lastForward) myDFPlayer.play(5);
+  if (backward && !lastBackward) myDFPlayer.play(8);
+  if (left && !lastLeft) myDFPlayer.play(4);
+  if (right && !lastRight) myDFPlayer.play(1);
+       // Pause music only if no movement and music is playing
+    if (!forward && !backward && !left && !right) {
+        if (lastForward || lastBackward || lastLeft || lastRight) {
+            myDFPlayer.pause();
+        }
+    }
+  lastForward = forward;
+  lastBackward = backward;
+  lastLeft = left;
+  lastRight = right;
+}
 
 // ------------------- Rest of code -------------------
 // Keep all your RGB, eyeloop(), WIFIcar(), loop(), readLDR(), temp logic, touch logic intact
@@ -352,8 +362,7 @@ void eyeloop() {
     eyeLoopActive = true;
     unsigned long elapsed = millis() - moodStart;
 
-   if (speedMoodActive || forward || backward || left || right || tempActive) return;
-
+    if (speedMoodActive || forward || backward || left || right || touchActive || tempActive) return;
 
     // ----------------- HAPPY PHASE -----------------
     if (elapsed < H) {
@@ -390,8 +399,30 @@ void eyeloop() {
     roboEyes.setAutoblinker(ON, 2, 3);
     roboEyes.setIdleMode(ON, 2, 3);
     if (tiredAudioLooping) stopTiredLoop = true;
+      if (curiosityStartTime == 0) {
+        curiosityStartTime = millis();
+    }
+
+    unsigned long time = millis() - curiosityStartTime;
+
+    if (time < 6000) {
+        myservo.write(150);
+        roboEyes.update();
+        roboEyes.setCuriosity(ON);  // first 3 sec
+    } 
+    else if (time < 12000) {
+        myservo.write(30);   // next 3 sec
+        roboEyes.update();
+        roboEyes.setCuriosity(ON);
     }
     else {
+        myservo.write(90);
+        roboEyes.update();
+        roboEyes.setCuriosity(ON);   // after 6 sec
+    }
+    }
+    else {
+        curiosityStartTime = 0;
         roboEyes.setMood(TIRED);
         roboEyes.setSweat(OFF);
         roboEyes.setCuriosity(OFF);
@@ -418,7 +449,6 @@ void WIFIcar() {
         roboEyes.setIdleMode(OFF, 4, 3);
         roboEyes.setAutoblinker(ON, 2, 3);
         moodStart = millis();
-        roboEyes.update();
     } else if (backward) {
         carBackward();
         SleepStart = false;
@@ -430,7 +460,6 @@ void WIFIcar() {
         roboEyes.setIdleMode(OFF, 4, 3);
         roboEyes.setAutoblinker(ON, 2, 3);
         moodStart = millis();
-        roboEyes.update();
     } else if (left) {
         carLeft();
         SleepStart = false;
@@ -442,7 +471,6 @@ void WIFIcar() {
         roboEyes.setIdleMode(OFF, 4, 3);
         roboEyes.setAutoblinker(ON, 2, 3);
         moodStart = millis();
-        roboEyes.update();
     } else if (right) {
         carRight();
         SleepStart = false;
@@ -454,10 +482,8 @@ void WIFIcar() {
         roboEyes.setIdleMode(OFF, 4, 3);
         roboEyes.setAutoblinker(ON, 2, 3);
         moodStart = millis();
-        roboEyes.update();
     } else {
         carStop();
-        roboEyes.update();
         SleepStart = false;
     }
 }
@@ -539,10 +565,10 @@ void loop() {
     Blynk.run();
     WIFIcar();
     eyeloop();
+    triggerSounds();
     readLDR(LDR_PIN, 1000);
     checkTemperature();
-    triggerSounds();
-    roboEyes.update();
+
     if (eyeLoopActive) {
         roboEyes.update();  // only update eyes if awake
     }
@@ -581,11 +607,13 @@ if (buttonState == LOW && lastButtonState == HIGH) {
         roboEyes.setHeight(40, 40);
         roboEyes.setWidth(40, 40);
         Serial.println("Happy mode locked!");
+        myDFPlayer.stop();
     } else {
         roboEyes.setHeight(36, 36);
         roboEyes.setWidth(36, 36);
         moodStart = millis(); // resume normal cycle
         Serial.println("Resumed normal mood cycle.");
+        myDFPlayer.start();
     }
     delay(200); // debounce
 }
@@ -665,30 +693,7 @@ lastButtonState = buttonState;
         moodStart=millis();
     }
 }
-void triggerSounds() {
-  if (forward && !lastForward) {
-    myDFPlayer.play(5);
-  }
-  if (backward && !lastBackward) {
-    myDFPlayer.play(8);
-  }
-  if (left && !lastLeft) {
-     myDFPlayer.play(4);
-  }
-  if (right && !lastRight) {
-    myDFPlayer.play(1);
-  }
-       // Pause music only if no movement and music is playing
-    if (!forward && !backward && !left && !right) {
-        if (lastForward || lastBackward || lastLeft || lastRight) {
-            myDFPlayer.pause();
-        }
-    }
-  lastForward = forward;
-  lastBackward = backward;
-  lastLeft = left;
-  lastRight = right;
-}
+
 // ------------------- LDR Sleep/Wake -------------------
 void readLDR(int pin, int threshold) {
     int ldrValue = analogRead(pin);
