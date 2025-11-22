@@ -1,36 +1,43 @@
-<span style="font-size:42px; font-weight:900;">FRED 🤖 – Intelligent ESP32 Robot with Emotions, Display & Blynk Control</span>
+1. FRED – Intelligent ESP32 Robot with Emotions, Display & Blynk Control
 
-<span style="font-size:18px;">FRED is an ESP32-powered smart robot car that mixes movement, moods, OLED animations, temperature awareness, touch interaction, and sound effects into one mini-character.
-It uses expressive OLED RoboEyes, DFPlayer audio, and full Blynk app control, making the robot feel alive instead of just… wheels and wires.</span>
+FRED is an ESP32-powered smart robot car that blends motion, emotion, sensing, touch response, and audio feedback. It features expressive OLED “RoboEyes,” DFPlayer Mini sound effects, and full real-time control using the Blynk IoT app.
 
-<span style="font-size:28px;">✨ 1. Features</span>
+FRED doesn’t behave like a normal robot — it reacts to light, temperature, touch, movement, and user-selected moods, making it feel alive.
 
-Blynk App Control – Forward, Back, Left, Right + variable speed
+2. ✨ Features
+2.1 Blynk App Control
 
-Emotional OLED Eyes via FluxGarage_RoboEyes
+Forward, Back, Left, Right, Speed Control.
 
-DFPlayer Mini Audio – movement sounds, tired effects, greetings
+2.2 Emotional OLED Eyes
 
-Automatic Mood Cycle
- • Happy → Default → Curious → Tired
+Powered by FluxGarage_RoboEyes — happy, angry, tired, curious, sweating, flicker, autoblink.
 
-Light Detection through LDR
+2.3 DFPlayer Mini Audio
 
-Touch-activated reactions
+Movement SFX, tired-mode loop, greetings, and startup audio.
 
-Temperature-based emotions using DHT11
+2.4 Automatic Mood Cycle
 
-Servo Head Steering / Movement
+Happy → Default → Curious → Tired.
 
-Startup animation + sound
+2.5 Environment Awareness
 
-Happy-Lock Mode using physical button
+• LDR light detection
+• DHT11 temperature reactions
+• Touch-triggered interaction
 
-FRED reacts to light, temperature, mood commands, motor usage, and human interaction — it behaves more like a tiny robot pet.
+2.6 Mechanical Movement
 
-<span style="font-size:28px;">🧩 2. Components Used</span>
+Servo-based head/steering + dual DC motor drive.
 
-ESP32 Dev Board
+2.7 Special Modes
+
+Startup animation + Happy-Lock Mode (physical button).
+
+3. 🧩 Components Used
+
+ESP32 Development Board
 
 L298N Motor Driver
 
@@ -38,146 +45,131 @@ DC Motors (Left + Right)
 
 SG90 / MG90 Servo Motor
 
-128×64 SSD1306 OLED Display
+128×64 SSD1306 OLED
 
 FluxGarage RoboEyes Library
 
 DFPlayer Mini + Speaker
 
-DHT11 Sensor
+DHT11 Temperature Sensor
 
-LDR Light Sensor
+LDR Sensor
 
-Push Button (Happy-Lock)
+Push Button (Happy-Lock Mode)
 
-Jumper wires, chassis, battery pack
+Jumper wires + battery pack + chassis
 
-<span style="font-size:28px;">📦 3. Pin Configuration</span>
-<span style="font-size:20px;">Motor Driver – L298N</span>
+4. 📦 Pin Configuration
+4.1 Motor Driver (L298N)
 
 ENA → 2
-
 IN1 → 4
-
 IN2 → 5
-
 IN3 → 18
-
 IN4 → 19
-
 ENB → 21
 
-Sensors & Others
+4.2 Sensors & Others
 
 Servo → 33
-
 LDR → 34
-
 Touch Input → 15
-
 Button → 13
-
 DHT11 → 27
 
-DFPlayer Mini
+4.3 DFPlayer Mini
 
 TX → ESP32 RX (16)
-
 RX → ESP32 TX (17)
 
-<span style="font-size:28px;">📱 4. Blynk Virtual Pins</span>
+5. 📱 Blynk Virtual Pins
 
-V0 → Speed
-
+V0 → Speed Control
 V1 → Forward
-
 V2 → Backward
-
 V3 → Left
-
 V4 → Right
 
-<span style="font-size:28px;">🧠 5. Behavior System</span>
+6. 🧠 Behavior System
 
 FRED updates its emotional state based on:
 
-Idle time
+• Time since last user interaction
+• Current speed value
+• Light intensity
+• Temperature
+• Manual movement commands
+• Touch input
 
-Light level
+The OLED eyes animate accordingly: happy, angry, tired, sweating, curious, flicker, autoblink, and more.
 
-Temperature
+7. 📚 Libraries Used
 
-Touch input
+This ESP32 project uses several libraries to handle motors, sensors, OLED animation, audio, and IoT connectivity.
 
-Motor speed
+7.1 Blynk (ESP32)
 
-Direct commands
+Library: BlynkSimpleEsp32.h
+Purpose: Blynk app control, virtual pins V0–V4, WiFi management.
 
-Its OLED eyes animate accordingly — happy, tired, angry, sweating, curious, and more.
+7.2 WiFi
 
-<span style="font-size:28px;">📚 6. Libraries Used</span>
-1. Blynk (ESP32 Edition)
+Library: WiFi.h
+Purpose: Network connection for Blynk and OTA.
 
-Header: #include <BlynkSimpleEsp32.h>
-Controls movement, speed, and WiFi communication.
+7.3 Adafruit SSD1306
 
-2. WiFi.h
+Library: Adafruit_SSD1306.h
+Purpose: OLED display driver — boot screen, temp display, debug output.
 
-Handles internet connectivity for Blynk.
+7.4 Adafruit GFX
 
-3. Adafruit SSD1306
+Auto-included; handles text, shapes, and pixel rendering.
 
-Header: #include <Adafruit_SSD1306.h>
-Runs the 128×64 OLED screen.
+7.5 FluxGarage RoboEyes
 
-4. Adafruit GFX
+Library: FluxGarage_RoboEyes.h
+Link: https://github.com/FluxGarage/RoboEyes
 
-Helper library for drawing graphics.
+Purpose: Expressive eye animations (happy, tired, angry, curious, sweating, flicker, autoblink).
 
-5. FluxGarage RoboEyes
+7.6 ESP32Servo
 
-Header: #include <FluxGarage_RoboEyes.h>
-Handles expressive animated eyes (blink, flicker, tired, happy, etc.).
+Library: ESP32Servo.h
+Purpose: Controls steering servo using software PWM.
 
-6. ESP32Servo
+7.7 DHT Sensor Library
 
-Header: #include <ESP32Servo.h>
-Controls steering servo.
+Libraries: DHT.h, Adafruit_Sensor.h
+Purpose: Temperature-based mood logic (cold flicker, hot sweat).
 
-7. DHT Sensor Library
+7.8 DFPlayer Mini
 
-Headers:
-#include <DHT.h>
-#include <Adafruit_Sensor.h>
-Reads temperature + changes emotion.
+Library: DFRobotDFPlayerMini.h
+Purpose: MP3 playback — startup, movement, tired-mode audio.
 
-8. DFPlayer Mini
+7.9 HardwareSerial
 
-Header: #include <DFRobotDFPlayerMini.h>
-Handles audio playback for movements, greetings, tiredness, etc.
+Library: HardwareSerial.h
+Purpose: DFPlayer communication (UART1: pins 16 & 17).
 
-9. HardwareSerial
+7.10 Wire (I²C)
 
-Header: #include <HardwareSerial.h>
-Used for UART communication with DFPlayer.
+Library: Wire.h
+Purpose: OLED communication (SDA = 23, SCL = 22).
 
-10. Wire
+7.11 ESP System
 
-Header: #include <Wire.h>
-I²C communication with OLED.
+Library: esp_system.h
+Purpose: ESP32 internal system functions.
 
-11. ESP System
+7.12 Arduino Core
 
-Header: #include "esp_system.h"
-Low-level ESP32 functions.
+Built into ESP32 board package. Used for pin control, timing, and core logic.
 
-12. Arduino Core
+8. 🎵 Audio Instructions
 
-Handles digitalWrite, analogRead, delays, millis, etc.
+Format your SD card to FAT32 before loading audio files.
+If sounds don’t play in correct order, adjust the track number inside:
 
-<span style="font-size:22px;">🔊 Audio File Setup</span>
-
-Format your SD card to FAT32, then copy your audio tracks.
-If a sound doesn’t play, adjust the track number in code:
-
-myDFPlayer.play(3);  // play file 003.mp3
+myDFPlayer.play(<track_number>);
