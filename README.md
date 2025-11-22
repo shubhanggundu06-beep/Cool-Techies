@@ -68,6 +68,9 @@ IN2 → 5
 IN3 → 18
 IN4 → 19
 ENB → 21
+GND → ESP32 GND
++12v → battery +
+GND → battery - 
 
 4.2 Sensors & Others
 
@@ -81,6 +84,17 @@ DHT11 → 27
 
 TX → ESP32 RX (16)
 RX → ESP32 TX (17)
+
+4.4 Power
+2s 3000mah lithium ion battery pack
+mp1584 buck converter
+Battery + → mp1584 + and l298N +
+Battery - → mp1584 - and l298N -
+set mp1584 to 5v output
+mp1584 + → esp32 vin or 5v pin
+mp1584 - → esp32 gnd
+l298n gnd → esp32 gnd for logic
+
 
 5. 📱 Blynk Virtual Pins
 
